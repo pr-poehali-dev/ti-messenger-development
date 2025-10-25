@@ -33,6 +33,7 @@ export default function Index() {
   const [isRegistering, setIsRegistering] = useState(false);
   
   const [users, setUsers] = useState<User[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [messageText, setMessageText] = useState('');
@@ -144,6 +145,16 @@ export default function Index() {
     return date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
   };
 
+  const getUnreadCount = (userId: number) => {
+    return messages.filter(
+      (msg) => msg.sender_id === userId && msg.receiver_id === currentUser?.id && !msg.is_read
+    ).length;
+  };
+
+  const filteredUsers = users.filter((user) =>
+    user.username.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -199,7 +210,7 @@ export default function Index() {
     <div className="flex h-screen bg-background">
       <div className="w-80 border-r border-border flex flex-col bg-card">
         <div className="p-4 border-b border-border">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 mb-3">
             <Avatar className="h-10 w-10">
               <AvatarImage src={currentUser?.avatar_url} />
               <AvatarFallback>{currentUser?.username[0]}</AvatarFallback>
@@ -209,11 +220,20 @@ export default function Index() {
               <p className="text-xs text-green-600">В сети</p>
             </div>
           </div>
+          <div className="relative">
+            <Icon name="Search" size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Поиск пользователей..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
         </div>
 
         <ScrollArea className="flex-1">
           <div className="p-2">
-            {users.map((user) => (
+            {filteredUsers.map((user) => (
               <button
                 key={user.id}
                 onClick={() => {
@@ -239,6 +259,11 @@ export default function Index() {
                     {user.is_online ? 'В сети' : `был(а) ${formatTime(user.last_seen)}`}
                   </div>
                 </div>
+                {getUnreadCount(user.id) > 0 && (
+                  <div className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs font-semibold">
+                    {getUnreadCount(user.id)}
+                  </div>
+                )}
               </button>
             ))}
           </div>

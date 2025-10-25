@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -47,88 +47,90 @@ export default function Index() {
       return;
     }
 
-    const mockUser: User = {
-      id: Date.now(),
-      username,
-      is_online: true,
-      avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`,
-      last_seen: new Date().toISOString()
-    };
+    try {
+      const response = await fetch('https://functions.poehali.dev/5ccde1d2-dbf2-4d55-a558-76501bdd8e39', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username,
+          password,
+          action: isRegistering ? 'register' : 'login'
+        })
+      });
 
-    setCurrentUser(mockUser);
-    setIsAuthenticated(true);
-    loadUsers();
-    toast({ title: isRegistering ? "Регистрация успешна!" : "Вход выполнен!" });
-  };
+      const data = await response.json();
 
-  const loadUsers = () => {
-    const mockUsers: User[] = [
-      {
-        id: 1,
-        username: 'TestBot',
-        is_online: false,
-        avatar_url: 'https://api.dicebear.com/7.x/bottts/svg?seed=TestBot',
-        last_seen: new Date().toISOString()
-      },
-      {
-        id: 2,
-        username: 'Алиса',
-        is_online: true,
-        avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alice',
-        last_seen: new Date().toISOString()
-      },
-      {
-        id: 3,
-        username: 'Боб',
-        is_online: false,
-        avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Bob',
-        last_seen: new Date(Date.now() - 3600000).toISOString()
+      if (response.ok) {
+        setCurrentUser(data);
+        setIsAuthenticated(true);
+        loadUsers();
+        toast({ title: isRegistering ? "Регистрация успешна!" : "Вход выполнен!" });
+      } else {
+        toast({ title: "Ошибка", description: data.error || "Не удалось войти", variant: "destructive" });
       }
-    ];
-    setUsers(mockUsers);
+    } catch (error) {
+      toast({ title: "Ошибка", description: "Проблема с подключением", variant: "destructive" });
+    }
   };
 
-  const loadMessages = (userId: number) => {
-    const mockMessages: Message[] = [
-      {
-        id: 1,
-        sender_id: currentUser?.id || 0,
-        receiver_id: userId,
-        message_text: 'Привет! Как дела?',
-        created_at: new Date(Date.now() - 7200000).toISOString(),
-        is_read: true
-      },
-      {
-        id: 2,
-        sender_id: userId,
-        receiver_id: currentUser?.id || 0,
-        message_text: userId === 1 ? '' : 'Отлично, спасибо!',
-        created_at: new Date(Date.now() - 3600000).toISOString(),
-        is_read: true
+  const loadUsers = async () => {
+    try {
+      const response = await fetch('https://functions.poehali.dev/66ede86c-9969-47e8-bbcc-36f0975b61c3');
+      const data = await response.json();
+      if (response.ok) {
+        setUsers(data.users);
       }
-    ];
-    setMessages(userId === 1 ? [mockMessages[0]] : mockMessages);
+    } catch (error) {
+      console.error('Failed to load users:', error);
+    }
   };
 
-  const sendMessage = () => {
+  const loadMessages = async (userId: number) => {
+    if (!currentUser) return;
+    
+    try {
+      const response = await fetch(
+        `https://functions.poehali.dev/2448875a-39de-446f-8f2e-b341884e3994?user1_id=${currentUser.id}&user2_id=${userId}`
+      );
+      const data = await response.json();
+      if (response.ok) {
+        setMessages(data.messages || []);
+      }
+    } catch (error) {
+      console.error('Failed to load messages:', error);
+    }
+  };
+
+  const sendMessage = async () => {
     if (!messageText && !imageUrl) return;
     if (!selectedUser || !currentUser) return;
 
-    const newMessage: Message = {
-      id: Date.now(),
-      sender_id: currentUser.id,
-      receiver_id: selectedUser.id,
-      message_text: messageText,
-      image_url: imageUrl || undefined,
-      created_at: new Date().toISOString(),
-      is_read: false
-    };
+    try {
+      const response = await fetch('https://functions.poehali.dev/2448875a-39de-446f-8f2e-b341884e3994', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sender_id: currentUser.id,
+          receiver_id: selectedUser.id,
+          message_text: messageText,
+          image_url: imageUrl || null
+        })
+      });
 
-    setMessages([...messages, newMessage]);
-    setMessageText('');
-    setImageUrl('');
-    setShowImageInput(false);
-    toast({ title: "Сообщение отправлено" });
+      const data = await response.json();
+
+      if (response.ok) {
+        setMessages([...messages, data]);
+        setMessageText('');
+        setImageUrl('');
+        setShowImageInput(false);
+        toast({ title: "Сообщение отправлено" });
+      } else {
+        toast({ title: "Ошибка", description: "Не удалось отправить сообщение", variant: "destructive" });
+      }
+    } catch (error) {
+      toast({ title: "Ошибка", description: "Проблема с подключением", variant: "destructive" });
+    }
   };
 
   const handleCall = () => {

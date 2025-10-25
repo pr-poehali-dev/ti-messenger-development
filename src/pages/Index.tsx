@@ -42,6 +42,24 @@ export default function Index() {
   
   const { toast } = useToast();
 
+  useEffect(() => {
+    if (!isAuthenticated || !currentUser) return;
+
+    loadUsers();
+    const usersInterval = setInterval(loadUsers, 3000);
+
+    return () => clearInterval(usersInterval);
+  }, [isAuthenticated, currentUser]);
+
+  useEffect(() => {
+    if (!selectedUser || !currentUser) return;
+
+    loadMessages(selectedUser.id);
+    const messagesInterval = setInterval(() => loadMessages(selectedUser.id), 3000);
+
+    return () => clearInterval(messagesInterval);
+  }, [selectedUser, currentUser]);
+
   const handleAuth = async () => {
     if (!username || !password) {
       toast({ title: "Ошибка", description: "Заполните все поля", variant: "destructive" });
@@ -64,7 +82,6 @@ export default function Index() {
       if (response.ok) {
         setCurrentUser(data);
         setIsAuthenticated(true);
-        loadUsers();
         toast({ title: isRegistering ? "Регистрация успешна!" : "Вход выполнен!" });
       } else {
         toast({ title: "Ошибка", description: data.error || "Не удалось войти", variant: "destructive" });

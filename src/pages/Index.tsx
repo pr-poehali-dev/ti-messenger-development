@@ -78,7 +78,8 @@ export default function Index() {
       const response = await fetch('https://functions.poehali.dev/66ede86c-9969-47e8-bbcc-36f0975b61c3');
       const data = await response.json();
       if (response.ok) {
-        setUsers(data.users);
+        const filteredUsers = data.users.filter((u: User) => u.id !== currentUser?.id);
+        setUsers(filteredUsers);
       }
     } catch (error) {
       console.error('Failed to load users:', error);
@@ -324,13 +325,6 @@ export default function Index() {
                 </div>
               )}
               <div className="flex gap-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setShowImageInput(!showImageInput)}
-                >
-                  <Icon name="Image" size={20} />
-                </Button>
                 <Input
                   placeholder="Введите сообщение..."
                   value={messageText}
@@ -338,6 +332,13 @@ export default function Index() {
                   onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
                   className="flex-1"
                 />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowImageInput(!showImageInput)}
+                >
+                  <Icon name="Image" size={20} />
+                </Button>
                 <Button onClick={sendMessage}>
                   <Icon name="Send" size={20} />
                 </Button>

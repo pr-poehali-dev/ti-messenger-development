@@ -40,8 +40,26 @@ export default function Index() {
   const [imageUrl, setImageUrl] = useState('');
   const [showImageInput, setShowImageInput] = useState(false);
   const [prevMessagesCount, setPrevMessagesCount] = useState(0);
+  const [isTyping, setIsTyping] = useState(false);
+  const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
   
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
+
+  const handleTyping = () => {
+    setIsTyping(true);
+    if (typingTimeout) clearTimeout(typingTimeout);
+    const timeout = setTimeout(() => setIsTyping(false), 2000);
+    setTypingTimeout(timeout);
+  };
 
   useEffect(() => {
     if (!isAuthenticated || !currentUser) return;
@@ -65,7 +83,7 @@ export default function Index() {
     if (messages.length > prevMessagesCount && prevMessagesCount > 0) {
       const lastMessage = messages[messages.length - 1];
       if (lastMessage.sender_id !== currentUser?.id) {
-        const audio = new Audio('data:audio/wav;base64,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');
+        const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZUQ0PVqzn77BdGAg+ltryxXEjBS+Czfncij0IFmWx6+mnUw0MUKXi8LZjHAY5kdTyzHcsBSd3yO/ejUAJFF+06+uoVRQKRp/g8r5sIQUxh9Hz04IzBh5twO7jmVEND1as5++wXRgIPpba8sVxIwUvgs353Io9CBZlsevpp1MNDFCl4vC2YxwGOZHU8sx3LAUndsjv3o1ACRRftOvrqFUUCkaf4PK+bCEFMYfR89OCMwYebcDu45lRDQ9WrOfvr10YCD6W2vLFcSMFL4LN+dyKPQgWZbHr6adTDQxPpeLwtmMcBjmR1PLMdywFJ3fI796NQAkUX7Tr66hVFApGn+DyvmwhBTGH0fPTgjMGHm3A7uOZUQ0PVqzn769dGAg+ltryxXEjBS+CzfncijwJFmWx6+mnUw0MUKXi8LZjHAY5kdTyzHcsBSd3yO/ejUAJFF+06+uoVRQKRp/g8r5sIQUxh9Hz04IzBh5twO7jmVEND1as5++vXRgIPpba8sVxIwUvgs353Io8CBZlsevpp1MNDFCl4vC2YxwGOZHU8sx3LAUnd8jv3o1ACRRftOvrqFUUCkaf4PK+bCEFMYfR89OCMwYebcDu45lRDQ9WrOfvr10YCD6W2vLFcSMFL4LN+dyKPAgWZbHr6adTDQxQpeLwtmMcBjmR1PLMdywFJ3fI796NQAkUX7Tr66hVFApGn+DyvmwhBTGH0fPTgjMGHm3A7uOZUQ0PVqzn769dGAg+ltryxXEjBS+CzfncijwIFmWx6+mnUw0MUKXi8LZjHAY5kdTyzHcsBSd3yO/ejUAJFF+06+uoVRQKRp/g8r5sIQUxh9Hz04IzBh5twO7jmVEND1as5++vXRgIPpba8sVxIwUvgs353Io8CBZlsevpp1MNDFCl4vC2YxwGOZHU8sx3LAUnd8jv3o1ACRRftOvrqFUUCkaf4PK+bCEFMYfR89OCMwYebcDu45lRDQ9WrOfvr10YCD6W2vLFcSMFL4LN+dyKPAgWZbHr6adTDQxQpeLwtmMcBjmR1PLMdywFJ3fI796NQAkUX7Tr66hVFApGn+DyvmwhBTGH0fPTgjMGHm3A7uOZUQ0PVqzn769dGAg+ltryxXEjBS+CzfncijwIFmWx6+mnUw0MUKXi8LZjHAY5kdTyzHcsBSd3yO/ejUAJFF+06+uoVRQKRp/g8r5sIQUxh9Hz04IzBh5twO7jmVEND1as5++vXRgIPpba8sVxIwUvgs353Io8CBZlsevpp1MNDFCl4vC2YxwGOZHU8sx3LAUnd8jv3o1ACRRftOvrqFUUCkaf4PK+bCEFMYfR89OCMwYebcDu45lRDQ9WrOfvr10YCD6W2vLFcSMFL4LN+dyKPAgWZbHr6adTDQxQpeLwtmMcBjmR1PLMdywFJ3fI796NQAkUX7Tr66hVFApGn+DyvmwhBTGH0fPTgjMGHm3A7uOZUQ0PVqzn769dGAg+ltryxXEjBS+CzfncijwIFmWx6+mnUw0MUKXi8LZjHAY5kdTyzHcsBSd3yO/ejUAJFF+06+uoVRQKRp/g8r5sIQUxh9Hz04IzBh5twO7jmVEND1as5++vXRgIPpba8sVxIwUvgs353Io8CBZlsevpp1MNDFCl4vC2YxwGOZHU8sx3LAUnd8jv3o1ACRRftOvrqFUUCkaf4PK+bCEFMYfR89OCMwYebcDu45lRDQ9WrOfvr10YCD6W2vLFcSMFL4LN+dyKPAgWZbHr6adTDQxQp... [truncated]
         audio.play().catch(() => {});
       }
     }
@@ -248,6 +266,13 @@ export default function Index() {
               <h2 className="font-semibold">{currentUser?.username}</h2>
               <p className="text-xs text-green-600">В сети</p>
             </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+            >
+              <Icon name={theme === 'light' ? 'Moon' : 'Sun'} size={20} />
+            </Button>
           </div>
           <div className="relative">
             <Icon name="Search" size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -311,7 +336,7 @@ export default function Index() {
                 <div>
                   <h2 className="font-semibold">{selectedUser.username}</h2>
                   <p className="text-xs text-muted-foreground">
-                    {selectedUser.is_online ? 'В сети' : `был(а) ${formatTime(selectedUser.last_seen)}`}
+                    {isTyping ? 'печатает...' : selectedUser.is_online ? 'В сети' : `был(а) ${formatTime(selectedUser.last_seen)}`}
                   </p>
                 </div>
               </div>
@@ -382,7 +407,10 @@ export default function Index() {
                 <Input
                   placeholder="Введите сообщение..."
                   value={messageText}
-                  onChange={(e) => setMessageText(e.target.value)}
+                  onChange={(e) => {
+                    setMessageText(e.target.value);
+                    handleTyping();
+                  }}
                   onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
                   className="flex-1"
                 />

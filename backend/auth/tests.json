@@ -1,0 +1,36 @@
+{
+  "tests": [
+    {
+      "name": "Register new user",
+      "method": "POST",
+      "body": {
+        "username": "testuser",
+        "password": "testpass",
+        "action": "register"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "id": "number",
+        "username": "string",
+        "is_online": "boolean",
+        "avatar_url": "string"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Login user",
+      "method": "POST",
+      "body": {
+        "username": "TestBot",
+        "password": "test123",
+        "action": "login"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "id": "number",
+        "username": "string"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
